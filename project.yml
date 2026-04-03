@@ -1,0 +1,27 @@
+name: FloatingShelf
+options:
+  bundleIdPrefix: com.floatingshelf
+  deploymentTarget:
+    macOS: "26.0"
+  xcodeVersion: "15.0"
+  generateEmptyDirectories: true
+
+targets:
+  FloatingShelf:
+    type: application
+    platform: macOS
+    sources:
+      - FloatingShelf
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.floatingshelf.app
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: "1"
+        INFOPLIST_FILE: FloatingShelf/Info.plist
+        CODE_SIGN_ENTITLEMENTS: FloatingShelf/FloatingShelf.entitlements
+        SWIFT_VERSION: "5.9"
+        MACOSX_DEPLOYMENT_TARGET: "26.0"
+        COMBINE_HIDPI_IMAGES: true
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CODE_SIGN_IDENTITY: "-"
+        ENABLE_HARDENED_RUNTIME: false

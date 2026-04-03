@@ -1,0 +1,162 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -workspace FloatingShelf.xcodeproj/project.xcworkspace -scheme FloatingShelf build
+
+2026-04-02 16:58:49.331 xcodebuild[99574:2004261] [MT] IDERunDestination: Supported platforms for the buildables in the current scheme is empty.
+--- xcodebuild: WARNING: Using the first of multiple matching destinations:
+{ platform:macOS, arch:arm64, id:00008132-001651C03403001C, name:My Mac }
+{ platform:macOS, arch:x86_64, id:00008132-001651C03403001C, name:My Mac }
+{ platform:macOS, name:Any Mac }
+ComputePackagePrebuildTargetDependencyGraph
+
+Prepare packages
+
+CreateBuildRequest
+
+SendProjectDescription
+
+CreateBuildOperation
+
+ComputeTargetDependencyGraph
+note: Building targets in dependency order
+note: Target dependency graph (1 target)
+    Target 'FloatingShelf' in project 'FloatingShelf' (no dependencies)
+
+GatherProvisioningInputs
+
+CreateBuildDescription
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.4.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --version --output-format xml1
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc --version
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld -version_details
+
+Build description signature: 38070e0604a3d174e3a6bd358a579518
+Build description path: /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/XCBuildData/38070e0604a3d174e3a6bd358a579518.xcbuilddata
+ClangStatCache /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.4.sdk /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/macosx26.4-25E236-30f9ca8789b706f8bd3fc906a70d770f.sdkstatcache
+    cd /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf.xcodeproj
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.4.sdk -o /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/macosx26.4-25E236-30f9ca8789b706f8bd3fc906a70d770f.sdkstatcache
+
+ProcessInfoPlistFile /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Products/Debug/FloatingShelf.app/Contents/Info.plist /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Info.plist (in target 'FloatingShelf' from project 'FloatingShelf')
+    cd /Users/wangleihaoshuaio/Developer/FloatingShelf
+    builtin-infoPlistUtility /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Info.plist -producttype com.apple.product-type.application -genpkginfo /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Products/Debug/FloatingShelf.app/Contents/PkgInfo -expandbuildsettings -platform macosx -additionalcontentfile /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/FloatingShelf.build/Debug/FloatingShelf.build/assetcatalog_generated_info.plist -o /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Products/Debug/FloatingShelf.app/Contents/Info.plist
+
+SwiftDriver FloatingShelf normal arm64 com.apple.xcode.tools.swift.compiler (in target 'FloatingShelf' from project 'FloatingShelf')
+    cd /Users/wangleihaoshuaio/Developer/FloatingShelf
+    builtin-SwiftDriver -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name FloatingShelf -Onone @/Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/FloatingShelf.build/Debug/FloatingShelf.build/Objects-normal/arm64/FloatingShelf.SwiftFileList -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.4.sdk -target arm64-apple-macos14.0 -g -module-cache-path /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Products/Debug -F /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Products/Debug -c -j10 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/macosx26.4-25E236-30f9ca8789b706f8bd3fc906a70d770f.sdkstatcache -output-file-map /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/FloatingShelf.build/Debug/FloatingShelf.build/Objects-normal/arm64/FloatingShelf-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/FloatingShelf.build/Debug/FloatingShelf.build/Objects-normal/arm64/FloatingShelf.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/FloatingShelf.build/Debug/FloatingShelf.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/FloatingShelf.build/Debug/FloatingShelf.build/Objects-normal/arm64/FloatingShelf_const_extract_protocols.json -Xcc -iquote -Xcc /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/FloatingShelf.build/Debug/FloatingShelf.build/FloatingShelf-generated-files.hmap -Xcc -I/Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/FloatingShelf.build/Debug/FloatingShelf.build/FloatingShelf-own-target-headers.hmap -Xcc -I/Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/FloatingShelf.build/Debug/FloatingShelf.build/FloatingShelf-all-target-headers.hmap -Xcc -iquote -Xcc /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/FloatingShelf.build/Debug/FloatingShelf.build/FloatingShelf-project-headers.hmap -Xcc -I/Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Products/Debug/include -Xcc -I/Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/FloatingShelf.build/Debug/FloatingShelf.build/DerivedSources-normal/arm64 -Xcc -I/Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/FloatingShelf.build/Debug/FloatingShelf.build/DerivedSources/arm64 -Xcc -I/Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/FloatingShelf.build/Debug/FloatingShelf.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/FloatingShelf.build/Debug/FloatingShelf.build/Objects-normal/arm64/FloatingShelf-Swift.h -working-directory /Users/wangleihaoshuaio/Developer/FloatingShelf -experimental-emit-module-separately -disable-cmo
+
+SwiftCompile normal arm64 Compiling\ AccessibilityHelper.swift /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Core/AccessibilityHelper.swift (in target 'FloatingShelf' from project 'FloatingShelf')
+
+SwiftCompile normal arm64 /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Core/AccessibilityHelper.swift (in target 'FloatingShelf' from project 'FloatingShelf')
+    cd /Users/wangleihaoshuaio/Developer/FloatingShelf
+    
+
+SwiftCompile normal arm64 Compiling\ AppDelegate.swift /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/App/AppDelegate.swift (in target 'FloatingShelf' from project 'FloatingShelf')
+SwiftCompile normal arm64 /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/App/AppDelegate.swift (in target 'FloatingShelf' from project 'FloatingShelf')
+    cd /Users/wangleihaoshuaio/Developer/FloatingShelf
+    
+
+SwiftCompile normal arm64 Compiling\ FileStorageManager.swift /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Core/FileStorageManager.swift (in target 'FloatingShelf' from project 'FloatingShelf')
+
+SwiftCompile normal arm64 /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Core/FileStorageManager.swift (in target 'FloatingShelf' from project 'FloatingShelf')
+    cd /Users/wangleihaoshuaio/Developer/FloatingShelf
+    
+
+SwiftCompile normal arm64 Compiling\ AppEnumerator.swift /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Core/AppEnumerator.swift (in target 'FloatingShelf' from project 'FloatingShelf')
+
+SwiftCompile normal arm64 /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Core/AppEnumerator.swift (in target 'FloatingShelf' from project 'FloatingShelf')
+    cd /Users/wangleihaoshuaio/Developer/FloatingShelf
+    
+
+SwiftCompile normal arm64 Compiling\ AppGridView.swift /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Views/AppGridView.swift (in target 'FloatingShelf' from project 'FloatingShelf')
+SwiftCompile normal arm64 /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Views/AppGridView.swift (in target 'FloatingShelf' from project 'FloatingShelf')
+    cd /Users/wangleihaoshuaio/Developer/FloatingShelf
+    
+
+SwiftEmitModule normal arm64 Emitting\ module\ for\ FloatingShelf (in target 'FloatingShelf' from project 'FloatingShelf')
+
+EmitSwiftModule normal arm64 (in target 'FloatingShelf' from project 'FloatingShelf')
+    cd /Users/wangleihaoshuaio/Developer/FloatingShelf
+    
+
+SwiftCompile normal arm64 Compiling\ SettingsView.swift /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Views/SettingsView.swift (in target 'FloatingShelf' from project 'FloatingShelf')
+
+SwiftCompile normal arm64 /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Views/SettingsView.swift (in target 'FloatingShelf' from project 'FloatingShelf')
+    cd /Users/wangleihaoshuaio/Developer/FloatingShelf
+    
+
+SwiftCompile normal arm64 Compiling\ HotkeyManager.swift /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Core/HotkeyManager.swift (in target 'FloatingShelf' from project 'FloatingShelf')
+
+SwiftCompile normal arm64 /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Core/HotkeyManager.swift (in target 'FloatingShelf' from project 'FloatingShelf')
+    cd /Users/wangleihaoshuaio/Developer/FloatingShelf
+    
+/Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Core/HotkeyManager.swift:158:13: warning: variable 'fsID' was never mutated; consider changing to 'let' constant
+        var fsID = EventHotKeyID(signature: 0x4653484C, id: 1) // "FSHL"
+        ~~~ ^
+        let
+/Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Core/HotkeyManager.swift:162:13: warning: variable 'alID' was never mutated; consider changing to 'let' constant
+        var alID = EventHotKeyID(signature: 0x4150504C, id: 2) // "APPL"
+        ~~~ ^
+        let
+
+SwiftCompile normal arm64 Compiling\ FloatingPanel.swift /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Views/FloatingPanel.swift (in target 'FloatingShelf' from project 'FloatingShelf')
+
+SwiftCompile normal arm64 /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Views/FloatingPanel.swift (in target 'FloatingShelf' from project 'FloatingShelf')
+    cd /Users/wangleihaoshuaio/Developer/FloatingShelf
+    
+
+SwiftCompile normal arm64 Compiling\ FileShelfView.swift /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Views/FileShelfView.swift (in target 'FloatingShelf' from project 'FloatingShelf')
+Failed frontend command:
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-frontend -frontend -c /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Core/AccessibilityHelper.swift /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/App/AppDelegate.swift /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Core/AppEnumerator.swift /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Views/AppGridView.swift -primary-file /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Views/FileShelfView.swift /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Core/FileStorageManager.swift /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Views/FloatingPanel.swift /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/App/FloatingShelfApp.swift /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Core/HotkeyManager.swift /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Models/InstalledApp.swift /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Views/SettingsView.swift /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Models/ShelfFile.swift /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/FloatingShelf.build/Debug/FloatingShelf.build/DerivedSources/GeneratedAssetSymbols.swift -emit-dependencies-path /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/FloatingShelf.build/Debug/FloatingShelf.build/Objects-normal/arm64/FileShelfView.d -emit-const-values-path /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/FloatingShelf.build/Debug/FloatingShelf.build/Objects-normal/arm64/FileShelfView.swiftconstvalues -emit-reference-dependencies-path /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/FloatingShelf.build/Debug/FloatingShelf.build/Objects-normal/arm64/FileShelfView.swiftdeps -serialize-diagnostics-path /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/FloatingShelf.build/Debug/FloatingShelf.build/Objects-normal/arm64/FileShelfView.dia -target arm64-apple-macos14.0 -module-can-import-version DeveloperToolsSupport 23.40.26 23.40.26 -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libFoundationMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#FoundationMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libObservationMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#ObservationMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libPreviewsMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#PreviewsMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libSwiftMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#SwiftMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libSwiftUIMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#SwiftUIMacros -disable-implicit-swift-modules -Xcc -fno-implicit-modules -Xcc -fno-implicit-module-maps -explicit-swift-module-map-file /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/FloatingShelf.build/Debug/FloatingShelf.build/Objects-normal/arm64/FloatingShelf-dependencies-1.json -debug-module-path /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/FloatingShelf.build/Debug/FloatingShelf.build/Objects-normal/arm64/FloatingShelf.swiftmodule -Xllvm -aarch64-use-tbi -enable-objc-interop -stack-check -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.4.sdk -I /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Products/Debug -F /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Products/Debug -no-color-diagnostics -Xcc -fno-color-diagnostics -enable-testing -g -debug-info-format\=dwarf -dwarf-version\=4 -module-cache-path /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -swift-version 5 -Onone -D DEBUG -serialize-debugging-options -const-gather-protocols-file /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/FloatingShelf.build/Debug/FloatingShelf.build/Objects-normal/arm64/FloatingShelf_const_extract_protocols.json -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -empty-abi-descriptor -validate-clang-modules-once -clang-build-session-file /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -working-directory -Xcc /Users/wangleihaoshuaio/Developer/FloatingShelf -enable-anonymous-context-mangled-names -file-compilation-dir /Users/wangleihaoshuaio/Developer/FloatingShelf -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -Xcc -ivfsstatcache -Xcc /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/macosx26.4-25E236-30f9ca8789b706f8bd3fc906a70d770f.sdkstatcache -Xcc -I/Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/FloatingShelf.build/Debug/FloatingShelf.build/swift-overrides.hmap -Xcc -iquote -Xcc /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/FloatingShelf.build/Debug/FloatingShelf.build/FloatingShelf-generated-files.hmap -Xcc -I/Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/FloatingShelf.build/Debug/FloatingShelf.build/FloatingShelf-own-target-headers.hmap -Xcc -I/Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/FloatingShelf.build/Debug/FloatingShelf.build/FloatingShelf-all-target-headers.hmap -Xcc -iquote -Xcc /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/FloatingShelf.build/Debug/FloatingShelf.build/FloatingShelf-project-headers.hmap -Xcc -I/Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Products/Debug/include -Xcc -I/Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/FloatingShelf.build/Debug/FloatingShelf.build/DerivedSources-normal/arm64 -Xcc -I/Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/FloatingShelf.build/Debug/FloatingShelf.build/DerivedSources/arm64 -Xcc -I/Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/FloatingShelf.build/Debug/FloatingShelf.build/DerivedSources -Xcc -DDEBUG\=1 -no-auto-bridging-header-chaining -module-name FloatingShelf -frontend-parseable-output -disable-clang-spi -clang-target arm64-apple-macos26.4 -target-sdk-version 26.4 -target-sdk-name macosx26.4 -in-process-plugin-server-path /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/libSwiftInProcPluginServer.dylib -o /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Build/Intermediates.noindex/FloatingShelf.build/Debug/FloatingShelf.build/Objects-normal/arm64/FileShelfView.o -index-unit-output-path /FloatingShelf.build/Debug/FloatingShelf.build/Objects-normal/arm64/FileShelfView.o -index-store-path /Users/wangleihaoshuaio/Library/Developer/Xcode/DerivedData/FloatingShelf-bbrrogcmyvdeqkevxfgskhhrvarp/Index.noindex/DataStore -index-system-modules
+
+SwiftCompile normal arm64 /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Views/FileShelfView.swift (in target 'FloatingShelf' from project 'FloatingShelf')
+    cd /Users/wangleihaoshuaio/Developer/FloatingShelf
+    
+/Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Views/FileShelfView.swift:20:22: error: 'glassEffect(_:in:)' is only available in macOS 26.0 or newer
+                    .glassEffect(in: .rect(cornerRadius: 24))
+                     ^
+/Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Views/FileShelfView.swift:20:22: note: add 'if #available' version check
+                    .glassEffect(in: .rect(cornerRadius: 24))
+                     ^
+/Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Views/FileShelfView.swift:15:9: note: add '@available' attribute to enclosing property
+    var body: some View {
+        ^
+/Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Views/FileShelfView.swift:4:8: note: add '@available' attribute to enclosing struct
+struct FileShelfView: View {
+       ^
+/Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Views/FileShelfView.swift:62:10: warning: 'onChange(of:perform:)' was deprecated in macOS 14.0: Use `onChange` with a two or zero parameter action closure instead.
+        .onChange(of: storage.isEditingNote) { isEditing in
+         ^
+
+SwiftDriverJobDiscovery normal arm64 Compiling AccessibilityHelper.swift (in target 'FloatingShelf' from project 'FloatingShelf')
+
+SwiftDriverJobDiscovery normal arm64 Compiling FileStorageManager.swift (in target 'FloatingShelf' from project 'FloatingShelf')
+
+SwiftCompile normal arm64 Compiling\ FloatingShelfApp.swift /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/App/FloatingShelfApp.swift (in target 'FloatingShelf' from project 'FloatingShelf')
+
+SwiftCompile normal arm64 /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/App/FloatingShelfApp.swift (in target 'FloatingShelf' from project 'FloatingShelf')
+    cd /Users/wangleihaoshuaio/Developer/FloatingShelf
+    
+
+SwiftDriverJobDiscovery normal arm64 Compiling FloatingPanel.swift (in target 'FloatingShelf' from project 'FloatingShelf')
+
+SwiftDriverJobDiscovery normal arm64 Compiling AppEnumerator.swift (in target 'FloatingShelf' from project 'FloatingShelf')
+
+SwiftDriverJobDiscovery normal arm64 Compiling AppDelegate.swift (in target 'FloatingShelf' from project 'FloatingShelf')
+
+SwiftDriverJobDiscovery normal arm64 Compiling HotkeyManager.swift (in target 'FloatingShelf' from project 'FloatingShelf')
+
+SwiftDriverJobDiscovery normal arm64 Compiling SettingsView.swift (in target 'FloatingShelf' from project 'FloatingShelf')
+
+SwiftDriverJobDiscovery normal arm64 Compiling FloatingShelfApp.swift (in target 'FloatingShelf' from project 'FloatingShelf')
+
+** BUILD FAILED **
+
+
+The following build commands failed:
+	SwiftCompile normal arm64 Compiling\ FileShelfView.swift /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Views/FileShelfView.swift (in target 'FloatingShelf' from project 'FloatingShelf')
+	SwiftCompile normal arm64 /Users/wangleihaoshuaio/Developer/FloatingShelf/FloatingShelf/Views/FileShelfView.swift (in target 'FloatingShelf' from project 'FloatingShelf')
+	Building workspace FloatingShelf with scheme FloatingShelf
+(3 failures)
