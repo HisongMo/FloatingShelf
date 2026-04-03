@@ -176,6 +176,8 @@ struct AppGridView: View {
             searchText = ""
             currentPage = 0
             isSearchActivated = false
+            isSearchFocused = false
+            appEnumerator.isSearching = false
         }
         .onDisappear {
             removeEventMonitors()
@@ -188,6 +190,15 @@ struct AppGridView: View {
         }
         .onChange(of: isSearchFocused) { focused in
             appEnumerator.isSearching = focused
+        }
+        .onChange(of: appEnumerator.isSearching) { isSearching in
+            // When AppDelegate tells us we're no longer searching (usually hidden),
+            // reset everything so the next show starts fresh.
+            if !isSearching {
+                searchText = ""
+                isSearchActivated = false
+                isSearchFocused = false
+            }
         }
     }
     
