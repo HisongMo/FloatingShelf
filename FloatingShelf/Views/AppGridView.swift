@@ -176,18 +176,29 @@ struct AppGridView: View {
             searchText = ""
             currentPage = 0
             isSearchActivated = false
+            // Explicitly set searching to false so window can close
+            appEnumerator.isSearching = false
         }
         .onDisappear {
             removeEventMonitors()
             searchText = ""
             currentPage = 0
+            isSearchActivated = false
+            appEnumerator.isSearching = false
         }
-        .onChange(of: searchText) { _ in
-            // Reset to first page when search changes
+        .onChange(of: searchText) { txt in
             currentPage = 0
+            appEnumerator.isSearching = (isSearchActivated || !txt.isEmpty)
         }
-        .onChange(of: isSearchFocused) { focused in
-            appEnumerator.isSearching = focused
+        .onChange(of: isSearchActivated) { act in
+            appEnumerator.isSearching = (act || !searchText.isEmpty)
+        }
+        .onChange(of: appEnumerator.isSearching) { isSearching in
+            if !isSearching {
+                searchText = ""
+                isSearchActivated = false
+                isSearchFocused = false
+            }
         }
     }
     
