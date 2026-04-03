@@ -9,44 +9,15 @@ class AppEnumerator: ObservableObject {
     @Published var isLoading = false
     @Published var hoveredAppId: String?
     
-    // Store recent history (app IDs, mostly paths)
-    @Published var recentAppIds: [String] = []
+    /// Simply returns apps in alphabetical order — no recency sorting
+    var sortedApps: [InstalledApp] { apps }
     
-    var sortedApps: [InstalledApp] {
-        // Create an index dictionary for fast lookup of recency
-        var recencyMap = [String: Int]()
-        for (index, id) in recentAppIds.enumerated() {
-            recencyMap[id] = index
-        }
-        
-        return apps.sorted { app1, app2 in
-            let r1 = recencyMap[app1.id]
-            let r2 = recencyMap[app2.id]
-            
-            if let r1 = r1, let r2 = r2 {
-                return r1 < r2 // Both recent, compare recency order
-            } else if r1 != nil {
-                return true    // app1 is recent, app2 is not
-            } else if r2 != nil {
-                return false   // app2 is recent, app1 is not
-            } else {
-                // Neither is recent, preserve alphabetical sorting which is how 'apps' is loaded
-                return false // Using stable sort assumes `apps` is already alphabetized
-            }
-        }
-    }
-    
-    private init() {
-        if let stored = UserDefaults.standard.array(forKey: "recentAppIds") as? [String] {
-            recentAppIds = stored
-        }
-    }
+    private init() {}
     
     func loadApps() {
         isLoading = true
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             let found = Self.enumerateApps()
-            // Found is already alphabetically sorted by enumerateApps()
             DispatchQueue.main.async {
                 self?.apps = found
                 self?.isLoading = false
@@ -55,49 +26,57 @@ class AppEnumerator: ObservableObject {
     }
     
     func recordClick(appId: String) {
-        // Remove if it's already in the list
-        if let i = recentAppIds.firstIndex(of: appId) {
-            recentAppIds.remove(at: i)
-        }
-        // Insert at the front (index 0 is most recent)
-        recentAppIds.insert(appId, at: 0)
-        
-        // Limit to 40 recent apps
-        if recentAppIds.count > 40 {
-            recentAppIds = Array(recentAppIds.prefix(40))
-        }
-        
-        // Save
-        UserDefaults.standard.set(recentAppIds, forKey: "recentAppIds")
+        // No-op: recency tracking removed
     }
     
+    /// Only scan /Applications (and its one-level subdirectories)
     private static func enumerateApps() -> [InstalledApp] {
         let fm = FileManager.default
         var appURLs: [URL] = []
         
-        let roots: [URL] = [
+        // Finder's "Applications" merges both directories
+        let scanDirs = [
             URL(fileURLWithPath: "/Applications"),
-            URL(fileURLWithPath: "/System/Applications"),
-            URL(fileURLWithPath: "/System/Library/CoreServices"),
-            URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Applications")
+            URL(fileURLWithPath: "/System/Applications")
         ]
         
-        for root in roots where fm.fileExists(atPath: root.path) {
-            guard let enumerator = fm.enumerator(
-                at: root,
-                includingPropertiesForKeys: [.isApplicationKey],
-                options: [.skipsHiddenFiles, .skipsPackageDescendants]
-            ) else { continue }
-            
-            for case let url as URL in enumerator {
-                if (try? url.resourceValues(forKeys: [.isApplicationKey]).isApplication) == true
-                    || url.pathExtension.lowercased() == "app" {
-                    appURLs.append(url)
+        for appDir in scanDirs {
+            // Scan top level
+            if let enumerator = fm.enumerator(
+                at: appDir,
+                includingPropertiesForKeys: [.isDirectoryKey],
+                options: [.skipsSubdirectoryDescendants, .skipsHiddenFiles]
+            ) {
+                for case let fileURL as URL in enumerator {
+                    if fileURL.pathExtension == "app" {
+                        appURLs.append(fileURL)
+                    }
                 }
             }
         }
         
-        // Remove duplicates and build models
+        // Scan one-level subdirectories (e.g. /Applications/Utilities, /System/Applications/Utilities)
+        for appDir in scanDirs {
+            if let items = try? fm.contentsOfDirectory(at: appDir, includingPropertiesForKeys: [.isDirectoryKey]) {
+                for item in items {
+                    if item.hasDirectoryPath && item.pathExtension != "app" {
+                        if let subEnum = fm.enumerator(
+                            at: item,
+                            includingPropertiesForKeys: [.isDirectoryKey],
+                            options: [.skipsSubdirectoryDescendants, .skipsHiddenFiles]
+                        ) {
+                            for case let subURL as URL in subEnum {
+                                if subURL.pathExtension == "app" {
+                                    appURLs.append(subURL)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Build models, deduplicate by path
         var seen = Set<String>()
         var results: [InstalledApp] = []
         
@@ -107,9 +86,7 @@ class AppEnumerator: ObservableObject {
             seen.insert(path)
             
             let bundle = Bundle(url: url)
-            let name = bundle?.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
-                     ?? bundle?.object(forInfoDictionaryKey: "CFBundleName") as? String
-                     ?? url.deletingPathExtension().lastPathComponent
+            let name = Self.localizedAppName(for: url, bundle: bundle, fm: fm)
             let bundleId = bundle?.bundleIdentifier
             
             results.append(InstalledApp(
@@ -121,5 +98,61 @@ class AppEnumerator: ObservableObject {
         }
         
         return results.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+    }
+    
+    /// Get the localized display name for an app
+    private static func localizedAppName(for url: URL, bundle: Bundle?, fm: FileManager) -> String {
+        let fallback = url.deletingPathExtension().lastPathComponent
+        guard let bundle = bundle else { return fallback }
+        
+        let resourcesPath = bundle.resourcePath ?? (bundle.bundlePath + "/Contents/Resources")
+        
+        // Build locale candidates: both dash (zh-Hans) and underscore (zh_CN) variants
+        // "zh-Hans-CN" -> ["zh-Hans-CN", "zh_Hans_CN", "zh-Hans", "zh_Hans", "zh_CN", "zh"]
+        var candidates: [String] = []
+        for lang in Locale.preferredLanguages {
+            candidates.append(lang)
+            candidates.append(lang.replacingOccurrences(of: "-", with: "_"))
+            let parts = lang.components(separatedBy: "-")
+            if parts.count >= 3 {
+                // zh-Hans-CN -> zh-Hans, zh_Hans, zh_CN
+                let sub = parts[0..<2].joined(separator: "-")
+                candidates.append(sub)
+                candidates.append(sub.replacingOccurrences(of: "-", with: "_"))
+                candidates.append(parts[0] + "_" + parts[2])  // zh_CN
+            }
+            if parts.count >= 2 {
+                candidates.append(parts[0])
+            }
+        }
+        candidates.append("Base")
+        
+        // 1. Try .loctable file (macOS 26 system apps use this)
+        let loctablePath = resourcesPath + "/InfoPlist.loctable"
+        if fm.fileExists(atPath: loctablePath),
+           let data = fm.contents(atPath: loctablePath),
+           let plist = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any] {
+            for candidate in candidates {
+                if let locDict = plist[candidate] as? [String: String] {
+                    if let dn = locDict["CFBundleDisplayName"], !dn.isEmpty { return dn }
+                    if let bn = locDict["CFBundleName"], !bn.isEmpty { return bn }
+                }
+            }
+        }
+        
+        // 2. Try .lproj/InfoPlist.strings (traditional format)
+        for candidate in candidates {
+            let stringsPath = resourcesPath + "/" + candidate + ".lproj/InfoPlist.strings"
+            if fm.fileExists(atPath: stringsPath),
+               let dict = NSDictionary(contentsOfFile: stringsPath) {
+                if let dn = dict["CFBundleDisplayName"] as? String, !dn.isEmpty { return dn }
+                if let bn = dict["CFBundleName"] as? String, !bn.isEmpty { return bn }
+            }
+        }
+        
+        // 3. Fallback: bundle API
+        return bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
+            ?? bundle.object(forInfoDictionaryKey: "CFBundleName") as? String
+            ?? fallback
     }
 }

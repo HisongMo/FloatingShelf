@@ -183,7 +183,7 @@ struct SettingsView: View {
             } header: {
                 Text("Window Background")
             } footer: {
-                Text("Choose the color for the file shelf liquid glass background. This utilizes the new Liquid Glass design language from Xcode 26.")
+                Text("Choose the color for both floating windows (File Shelf and App Launcher). Uses the Liquid Glass design language from Xcode 26.")
             }
         }
         .formStyle(.grouped)

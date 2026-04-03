@@ -5,8 +5,8 @@ import AppKit
 private enum Grid {
     static let cols        = 7
     static let rows        = 3
-    static let tileSize:   CGFloat = 72    // glass tile & icon container
-    static let iconSize:   CGFloat = 56    // app icon image inside tile
+    static let tileSize:   CGFloat = 72
+    static let iconSize:   CGFloat = 56
     static let labelH:     CGFloat = 20
     static let itemH:      CGFloat = tileSize + 6 + labelH   // 98
     static let colSpacing: CGFloat = 14
@@ -15,13 +15,14 @@ private enum Grid {
     static let vPad:       CGFloat = 16
     static let dotsH:      CGFloat = 22
 
-    // Golden ratio horizontal: w ≈ h × 1.618
     static let panelW: CGFloat = CGFloat(cols) * tileSize + CGFloat(cols - 1) * colSpacing + hPad * 2
     static let gridH:  CGFloat = CGFloat(rows) * itemH + CGFloat(rows - 1) * rowSpacing + vPad * 2
     static let panelH: CGFloat = gridH + dotsH
+    
+    static let perPage = cols * rows  // 21
 }
 
-// MARK: - Scroll State (shared across view updates)
+// MARK: - Scroll State
 
 private class ScrollState {
     var isGestureActive = false
@@ -31,190 +32,249 @@ private class ScrollState {
     var mouseWheelLocked = false
 }
 
+// MARK: - Page Direction
+
+enum PageDirection {
+    case prev, next
+}
+
 struct AppGridView: View {
     @EnvironmentObject var appEnumerator: AppEnumerator
-    @State private var currentPage  = 0
-    @State private var dragOffset:  CGFloat = 0
-    @State private var focusedIndex: Int?   = nil
-    @State private var scrollMonitor: Any?  = nil
-    @State private var keyMonitor: Any?     = nil
+    @AppStorage("glassBackgroundColor") private var glassBackgroundColor = "black"
+    @State private var currentPage = 0
+    @State private var scrollMonitor: Any? = nil
+    @State private var keyMonitor: Any? = nil
+    // Track slide direction for transition
+    @State private var slideForward = true
 
-    private let perPage = Grid.cols * Grid.rows
     private let scrollState = ScrollState()
+    
+    private var isLight: Bool { glassBackgroundColor == "white" }
+    private var dotColor: Color { isLight ? .black : .white }
 
     var body: some View {
+        let apps      = appEnumerator.sortedApps
+        let pageCount = max(1, Int(ceil(Double(apps.count) / Double(Grid.perPage))))
+        let cp        = min(currentPage, pageCount - 1)
+        
         ZStack {
-            // Solid white background for contrast debugging
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(Color.white)
+            // Liquid Glass Background
+            ZStack {
+                // Base Glass
+                Color(isLight ? NSColor.white : NSColor.black)
+                    .opacity(isLight ? 0.25 : 0.45)
+                    .glassEffect(in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+                    .tint(isLight ? .white : .black)
+                    .id(glassBackgroundColor)
+                
+                // Liquid Sheen 1
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.purple.opacity(0.12), Color.blue.opacity(0.08), .clear],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                
+                // Liquid Sheen 2 & Gloss
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color.white.opacity(0.25),
+                                .clear,
+                                Color.white.opacity(isLight ? 0.05 : 0.08)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .blendMode(.overlay)
+                
+                // Dynamic Border
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .strokeBorder(
+                        LinearGradient(
+                            colors: [
+                                Color.secondary.opacity(0.35),
+                                Color.secondary.opacity(0.08),
+                                Color.secondary.opacity(0.15),
+                                Color.secondary.opacity(0.35)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1.5
+                    )
+            }
 
             if appEnumerator.isLoading {
                 loadingState
-            } else if appEnumerator.sortedApps.isEmpty {
+            } else if apps.isEmpty {
                 emptyState
             } else {
-                appGrid
+                VStack(spacing: 0) {
+                    // Only render the CURRENT page — simple, no offset bugs
+                    pageView(apps: apps, page: cp, pageCount: pageCount)
+                        .frame(width: Grid.panelW, height: Grid.gridH)
+                        .clipped()
+                        .id(cp) // force view identity change on page flip
+                        .transition(.asymmetric(
+                            insertion: .move(edge: slideForward ? .trailing : .leading),
+                            removal: .move(edge: slideForward ? .leading : .trailing)
+                        ))
+                    
+                    // Page dots
+                    if pageCount > 1 {
+                        HStack(spacing: 6) {
+                            ForEach(0..<pageCount, id: \.self) { i in
+                                Circle()
+                                    .fill(i == cp ? dotColor.opacity(0.75) : dotColor.opacity(0.25))
+                                    .frame(width: 6, height: 6)
+                            }
+                        }
+                        .frame(height: Grid.dotsH)
+                    } else {
+                        Spacer().frame(height: Grid.dotsH)
+                    }
+                }
             }
         }
         .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
         .frame(width: Grid.panelW, height: Grid.panelH)
         .environment(\.controlActiveState, .active)
+        .environment(\.colorScheme, isLight ? .light : .dark)
         .onAppear { installEventMonitors() }
         .onDisappear { removeEventMonitors() }
     }
 
-    // MARK: - Event Monitors (no overlay, no mouse blocking)
+    // MARK: - Single Page View
     
+    private func pageView(apps: [InstalledApp], page: Int, pageCount: Int) -> some View {
+        let start    = page * Grid.perPage
+        let end      = min(start + Grid.perPage, apps.count)
+        let pageApps = Array(apps[start..<end])
+        
+        let rows = stride(from: 0, to: pageApps.count, by: Grid.cols).map { s in
+            Array(pageApps[s..<min(s + Grid.cols, pageApps.count)])
+        }
+        
+        return VStack(spacing: Grid.rowSpacing) {
+            ForEach(Array(rows.enumerated()), id: \.offset) { rowIdx, rowApps in
+                HStack(spacing: Grid.colSpacing) {
+                    ForEach(rowApps, id: \.id) { app in
+                        AppItemView(
+                            app: app,
+                            isHovered: appEnumerator.hoveredAppId == app.id
+                        )
+                        .frame(width: Grid.tileSize)
+                        .onHover { h in appEnumerator.hoveredAppId = h ? app.id : nil }
+                        .onTapGesture {
+                            appEnumerator.recordClick(appId: app.id)
+                            NSWorkspace.shared.open(app.url)
+                        }
+                    }
+                    // Fill empty slots in last row
+                    if rowApps.count < Grid.cols {
+                        ForEach(0..<(Grid.cols - rowApps.count), id: \.self) { _ in
+                            Color.clear.frame(width: Grid.tileSize)
+                        }
+                    }
+                }
+            }
+            // Fill empty rows if page has fewer than 3 rows
+            if rows.count < Grid.rows {
+                ForEach(0..<(Grid.rows - rows.count), id: \.self) { _ in
+                    HStack(spacing: Grid.colSpacing) {
+                        ForEach(0..<Grid.cols, id: \.self) { _ in
+                            Color.clear.frame(width: Grid.tileSize, height: Grid.itemH)
+                        }
+                    }
+                }
+            }
+        }
+        .padding(.horizontal, Grid.hPad)
+        .padding(.vertical, Grid.vPad)
+    }
+
+    // MARK: - Page navigation
+    
+    private func goToPage(_ direction: PageDirection) {
+        let apps      = appEnumerator.sortedApps
+        let pageCount = max(1, Int(ceil(Double(apps.count) / Double(Grid.perPage))))
+        let cp        = min(currentPage, pageCount - 1)
+        
+        switch direction {
+        case .prev:
+            guard cp > 0 else { return }
+            slideForward = false
+            withAnimation(.easeInOut(duration: 0.25)) { currentPage = cp - 1 }
+        case .next:
+            guard cp < pageCount - 1 else { return }
+            slideForward = true
+            withAnimation(.easeInOut(duration: 0.25)) { currentPage = cp + 1 }
+        }
+    }
+
+    // MARK: - Event Monitors
+
     private func installEventMonitors() {
-        // Scroll wheel monitor
         if scrollMonitor == nil {
             scrollMonitor = NSEvent.addLocalMonitorForEvents(matching: .scrollWheel) { [self] event in
                 self.handleScrollEvent(event)
                 return event
             }
         }
-        // Keyboard monitor
         if keyMonitor == nil {
             keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [self] event in
-                let arrows: [UInt16] = [123, 124, 125, 126, 36, 76]
-                if arrows.contains(event.keyCode) {
-                    self.handleKey(event.keyCode)
-                    return nil // consume the event
+                if event.keyCode == 123 { // ←
+                    self.goToPage(.prev); return nil
+                } else if event.keyCode == 124 { // →
+                    self.goToPage(.next); return nil
                 }
                 return event
             }
         }
     }
-    
+
     private func removeEventMonitors() {
         if let m = scrollMonitor { NSEvent.removeMonitor(m); scrollMonitor = nil }
         if let m = keyMonitor { NSEvent.removeMonitor(m); keyMonitor = nil }
     }
 
-    // MARK: - App Grid (Launchpad-style paging)
+    // MARK: - Scroll handler
 
-    private var appGrid: some View {
-        let apps      = appEnumerator.sortedApps
-        let pages = stride(from: 0, to: apps.count, by: perPage).map { start in
-            Array(apps[start..<min(start + perPage, apps.count)])
-        }
-        let pageCount = max(1, pages.count)
-        let cp        = min(currentPage, pageCount - 1)
-        let gridCols  = Array(repeating: GridItem(.fixed(Grid.tileSize), spacing: Grid.colSpacing), count: Grid.cols)
-        
-        // Launchpad-style transition: current page shrinks + fades, next page grows + fades in
-        let dragRatio = abs(dragOffset) / Grid.panelW
-        let exitScale: CGFloat = max(0.85, 1.0 - dragRatio * 0.15)
-        let exitOpacity: Double = max(0.3, 1.0 - Double(dragRatio) * 0.7)
-        let enterScale: CGFloat = min(1.0, 0.85 + dragRatio * 0.15)
-        let enterOpacity: Double = min(1.0, 0.3 + Double(dragRatio) * 0.7)
-
-        return VStack(spacing: 0) {
-            ZStack(alignment: .topLeading) {
-                HStack(spacing: 0) {
-                    ForEach(Array(pages.enumerated()), id: \.offset) { page, pageApps in
-
-                        LazyVGrid(columns: gridCols, spacing: Grid.rowSpacing) {
-                            ForEach(Array(pageApps.enumerated()), id: \.element.id) { localIdx, app in
-                                let globalIdx = page * perPage + localIdx
-                                let isFocused = focusedIndex == globalIdx
-                                AppItemView(
-                                    app: app,
-                                    isHovered: appEnumerator.hoveredAppId == app.id || isFocused
-                                )
-                                .onHover { h in appEnumerator.hoveredAppId = h ? app.id : nil }
-                                .onTapGesture {
-                                    appEnumerator.recordClick(appId: app.id)
-                                    NSWorkspace.shared.open(app.url)
-                                }
-                            }
-                        }
-                        .padding(.horizontal, Grid.hPad)
-                        .padding(.vertical, Grid.vPad)
-                        .frame(width: Grid.panelW, alignment: .topLeading)
-                        // Keep full brightness at rest; only animate while actively dragging
-                        .scaleEffect(page == cp ? (dragOffset == 0 ? 1.0 : exitScale) : (dragOffset == 0 ? 1.0 : enterScale))
-                        .opacity(page == cp ? (dragOffset == 0 ? 1.0 : exitOpacity) : (dragOffset == 0 ? 1.0 : enterOpacity))
-                    }
-                }
-                .offset(x: -CGFloat(cp) * Grid.panelW + dragOffset)
-                .animation(dragOffset == 0 ? .interpolatingSpring(stiffness: 200, damping: 22) : nil, value: currentPage)
-                .animation(dragOffset == 0 ? .interpolatingSpring(stiffness: 200, damping: 22) : nil, value: dragOffset)
-                .gesture(DragGesture()
-                    .onChanged { v in
-                        let raw = v.translation.width
-                        dragOffset = (cp == 0 && raw > 0) || (cp == pageCount - 1 && raw < 0)
-                            ? raw / 3 : raw
-                    }
-                    .onEnded { v in
-                        let threshold = Grid.panelW * 0.2
-                        if v.translation.width < -threshold && cp < pageCount - 1 {
-                            currentPage = cp + 1; focusedIndex = nil
-                        } else if v.translation.width > threshold && cp > 0 {
-                            currentPage = cp - 1; focusedIndex = nil
-                        }
-                        withAnimation(.interpolatingSpring(stiffness: 200, damping: 22)) { dragOffset = 0 }
-                    }
-                )
-            }
-            .frame(width: Grid.panelW, height: Grid.gridH)
-            .clipped()
-
-            // Page dots
-            if pageCount > 1 {
-                HStack(spacing: 6) {
-                    ForEach(0..<pageCount, id: \.self) { i in
-                        Circle()
-                            .fill(i == cp ? Color.white.opacity(0.9) : Color.white.opacity(0.3))
-                            .frame(width: 6, height: 6)
-                            .animation(.easeInOut(duration: 0.2), value: cp)
-                    }
-                }
-                .frame(height: Grid.dotsH)
-            } else {
-                Spacer().frame(height: Grid.dotsH)
-            }
-        }
-    }
-
-    // MARK: - Scroll handler (NSEvent.phase-based, one swipe = one page)
-    
     private func handleScrollEvent(_ event: NSEvent) {
-        let apps      = appEnumerator.sortedApps
-        let pageCount = max(1, Int(ceil(Double(apps.count) / Double(perPage))))
-        let cp        = min(currentPage, pageCount - 1)
-        
         let phase = event.phase
         let ss = scrollState
-        
-        // --- Trackpad gesture lifecycle ---
+
+        // Trackpad gesture
         if phase.contains(.began) {
             ss.isGestureActive = true
             ss.gestureHandled = false
             ss.scrollAccumX = 0
             ss.scrollAccumY = 0
         }
-        
+
         if ss.isGestureActive {
             ss.scrollAccumX += event.scrollingDeltaX
             ss.scrollAccumY += event.scrollingDeltaY
-            
+
             if !ss.gestureHandled {
                 let useH = abs(ss.scrollAccumX) >= abs(ss.scrollAccumY)
                 let delta = useH ? ss.scrollAccumX : ss.scrollAccumY
                 let threshold: CGFloat = 30
-                
-                if delta > threshold && cp > 0 {
+
+                if delta > threshold {
                     ss.gestureHandled = true
-                    withAnimation(.interpolatingSpring(stiffness: 200, damping: 22)) { currentPage = cp - 1 }
-                    focusedIndex = nil
-                } else if delta < -threshold && cp < pageCount - 1 {
+                    goToPage(.prev)
+                } else if delta < -threshold {
                     ss.gestureHandled = true
-                    withAnimation(.interpolatingSpring(stiffness: 200, damping: 22)) { currentPage = cp + 1 }
-                    focusedIndex = nil
+                    goToPage(.next)
                 }
             }
-            
+
             if phase.contains(.ended) || phase.contains(.cancelled) {
                 ss.isGestureActive = false
                 ss.gestureHandled = false
@@ -223,84 +283,22 @@ struct AppGridView: View {
             }
             return
         }
-        
-        // --- Mouse wheel (no phase info) ---
+
+        // Mouse wheel
         if phase.isEmpty && event.momentumPhase.isEmpty {
             let dx = event.scrollingDeltaX
             let dy = event.scrollingDeltaY
             let useH = abs(dx) >= abs(dy)
             let delta = useH ? dx : dy
-            
             guard abs(delta) > 2 else { return }
-            
+
             if !ss.mouseWheelLocked {
                 ss.mouseWheelLocked = true
-                if delta > 0 && cp > 0 {
-                    withAnimation(.interpolatingSpring(stiffness: 200, damping: 22)) { currentPage = cp - 1 }
-                    focusedIndex = nil
-                } else if delta < 0 && cp < pageCount - 1 {
-                    withAnimation(.interpolatingSpring(stiffness: 200, damping: 22)) { currentPage = cp + 1 }
-                    focusedIndex = nil
-                }
+                if delta > 0 { goToPage(.prev) } else { goToPage(.next) }
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     ss.mouseWheelLocked = false
                 }
             }
-        }
-    }
-
-    private func handleKey(_ keyCode: UInt16) {
-        let apps      = appEnumerator.sortedApps
-        let pageCount = max(1, Int(ceil(Double(apps.count) / Double(perPage))))
-        let cp        = min(currentPage, pageCount - 1)
-        let pageStart = cp * perPage
-        let pageEnd   = min(pageStart + perPage, apps.count)
-        let pageSize  = pageEnd - pageStart
-
-        var idx = focusedIndex ?? pageStart
-        if idx < pageStart || idx >= pageEnd { idx = pageStart }
-        let local = idx - pageStart
-
-        switch keyCode {
-        case 123: // ←
-            if local > 0 {
-                focusedIndex = pageStart + local - 1
-            } else if cp > 0 {
-                currentPage = cp - 1; focusedIndex = nil
-            }
-        case 124: // →
-            if local < pageSize - 1 {
-                focusedIndex = pageStart + local + 1
-            } else if cp < pageCount - 1 {
-                currentPage = cp + 1; focusedIndex = nil
-            }
-        case 126: // ↑
-            let prev = local - Grid.cols
-            if prev >= 0 {
-                focusedIndex = pageStart + prev
-            } else if cp > 0 {
-                currentPage = cp - 1
-                let prevStart = (cp - 1) * perPage
-                let prevSize  = min(perPage, apps.count - prevStart)
-                let col       = local % Grid.cols
-                let lastRow   = (prevSize - 1) / Grid.cols
-                focusedIndex  = prevStart + min(lastRow * Grid.cols + col, prevSize - 1)
-            }
-        case 125: // ↓
-            let next = local + Grid.cols
-            if next < pageSize {
-                focusedIndex = pageStart + next
-            } else if cp < pageCount - 1 {
-                currentPage  = cp + 1
-                focusedIndex = (cp + 1) * perPage + (local % Grid.cols)
-            }
-        case 36, 76: // Return / numpad Enter
-            if let fi = focusedIndex, fi < apps.count {
-                let app = apps[fi]
-                appEnumerator.recordClick(appId: app.id)
-                NSWorkspace.shared.open(app.url)
-            }
-        default: break
         }
     }
 
@@ -346,16 +344,20 @@ struct AppItemView: View {
         }
     }
 
+    @Environment(\.colorScheme) var colorScheme
+    private var isLight: Bool { colorScheme == .light }
+
     var body: some View {
         VStack(spacing: 4) {
             iconView
                 .frame(width: Grid.iconSize, height: Grid.iconSize)
                 .scaleEffect(isHovered ? 1.1 : 1.0)
+                .shadow(color: Color.black.opacity(isLight ? 0.1 : 0.35), radius: isHovered ? 6 : 2, y: isHovered ? 3 : 1)
                 .animation(.spring(response: 0.25, dampingFraction: 0.7), value: isHovered)
 
             Text(app.name)
                 .font(.system(size: 10, weight: isHovered ? .medium : .regular))
-                .foregroundColor(isHovered ? .black : .black.opacity(0.75))
+                .foregroundColor(isHovered ? .primary : .primary.opacity(0.75))
                 .lineLimit(2).multilineTextAlignment(.center)
                 .frame(width: Grid.tileSize)
         }

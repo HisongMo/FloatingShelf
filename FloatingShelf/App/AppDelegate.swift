@@ -84,8 +84,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let columns = count == 1 ? 1 : Swift.min(max(Int(ceil(sqrt(Double(count)))), 2), 5)
         let rows = Int(ceil(Double(count) / Double(columns)))
         
-        let width = CGFloat(columns) * 92.0 + 32.0
-        let height = CGFloat(rows) * 110.0 + 32.0
+        // itemW = adaptive(min 72, max 80), colSpacing = 12, hPad = 16*2 = 32
+        // itemH = tileSize(64) + vSpacing(6) + labelH(~22) = 92, rowSpacing = 12, vPad = 16*2 = 32
+        let width  = CGFloat(columns) * 80.0 + CGFloat(columns - 1) * 12.0 + 32.0
+        let height = CGFloat(rows)    * 92.0 + CGFloat(rows    - 1) * 12.0 + 32.0
         
         let newSize = NSSize(width: max(120, width), height: max(120, height))
         applyCenteredFrame(size: newSize)

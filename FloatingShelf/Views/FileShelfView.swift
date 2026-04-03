@@ -18,7 +18,7 @@ struct FileShelfView: View {
             ZStack {
                 // Base Glass
                 Color(glassBackgroundColor == "white" ? .white : .black)
-                    .opacity(glassBackgroundColor == "white" ? 0.3 : 0.6)
+                    .opacity(glassBackgroundColor == "white" ? 0.2 : 0.35)
                     .glassEffect(in: RoundedRectangle(cornerRadius: 24, style: .continuous))
                     .tint(glassBackgroundColor == "white" ? .white : .black)
                     .id(glassBackgroundColor)
@@ -107,7 +107,8 @@ struct FileShelfView: View {
     // MARK: - File Grid
     
     private var fileGrid: some View {
-        ScrollView {
+        VStack(spacing: 0) {
+            Spacer(minLength: 0)
             LazyVGrid(columns: columns, spacing: 12) {
                 ForEach(storage.files) { file in
                     FileItemView(file: file, isHovered: storage.hoveredFileId == file.id)
@@ -140,8 +141,8 @@ struct FileShelfView: View {
                 }
             }
             .padding(16)
+            Spacer(minLength: 0)
         }
-        .scrollIndicators(.never)
     }
     
     // MARK: - Empty State
