@@ -14,10 +14,11 @@ private enum Grid {
     static let hPad:       CGFloat = 20
     static let vPad:       CGFloat = 16
     static let dotsH:      CGFloat = 22
+    static let searchH:    CGFloat = 40  // search bar area height
 
     static let panelW: CGFloat = CGFloat(cols) * tileSize + CGFloat(cols - 1) * colSpacing + hPad * 2
     static let gridH:  CGFloat = CGFloat(rows) * itemH + CGFloat(rows - 1) * rowSpacing + vPad * 2
-    static let panelH: CGFloat = gridH + dotsH
+    static let panelH: CGFloat = searchH + gridH + dotsH
     
     static let perPage = cols * rows  // 21
 }
@@ -46,14 +47,29 @@ struct AppGridView: View {
     @State private var keyMonitor: Any? = nil
     // Track slide direction for transition
     @State private var slideForward = true
+    // Search
+    @State private var searchText = ""
+    @FocusState private var isSearchFocused: Bool
+    @State private var isSearchActivated = false
 
     private let scrollState = ScrollState()
     
     private var isLight: Bool { glassBackgroundColor == "white" }
     private var dotColor: Color { isLight ? .black : .white }
+    
+    /// Filtered apps based on search text
+    private var filteredApps: [InstalledApp] {
+        let allApps = appEnumerator.sortedApps
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return allApps }
+        return allApps.filter { app in
+            app.name.localizedCaseInsensitiveContains(query)
+            || (app.bundleIdentifier?.localizedCaseInsensitiveContains(query) ?? false)
+        }
+    }
 
     var body: some View {
-        let apps      = appEnumerator.sortedApps
+        let apps      = filteredApps
         let pageCount = max(1, Int(ceil(Double(apps.count) / Double(Grid.perPage))))
         let cp        = min(currentPage, pageCount - 1)
         
@@ -111,19 +127,29 @@ struct AppGridView: View {
 
             if appEnumerator.isLoading {
                 loadingState
-            } else if apps.isEmpty {
+            } else if apps.isEmpty && searchText.isEmpty {
                 emptyState
             } else {
                 VStack(spacing: 0) {
-                    // Only render the CURRENT page — simple, no offset bugs
-                    pageView(apps: apps, page: cp, pageCount: pageCount)
-                        .frame(width: Grid.panelW, height: Grid.gridH)
-                        .clipped()
-                        .id(cp) // force view identity change on page flip
-                        .transition(.asymmetric(
-                            insertion: .move(edge: slideForward ? .trailing : .leading),
-                            removal: .move(edge: slideForward ? .leading : .trailing)
-                        ))
+                    // MARK: - Search Bar
+                    searchBar
+                        .frame(height: Grid.searchH)
+                    
+                    if apps.isEmpty {
+                        // No results state
+                        noResultsState
+                            .frame(width: Grid.panelW, height: Grid.gridH)
+                    } else {
+                        // Only render the CURRENT page — simple, no offset bugs
+                        pageView(apps: apps, page: cp, pageCount: pageCount)
+                            .frame(width: Grid.panelW, height: Grid.gridH)
+                            .clipped()
+                            .id(cp) // force view identity change on page flip
+                            .transition(.asymmetric(
+                                insertion: .move(edge: slideForward ? .trailing : .leading),
+                                removal: .move(edge: slideForward ? .leading : .trailing)
+                            ))
+                    }
                     
                     // Page dots
                     if pageCount > 1 {
@@ -145,8 +171,71 @@ struct AppGridView: View {
         .frame(width: Grid.panelW, height: Grid.panelH)
         .environment(\.controlActiveState, .active)
         .environment(\.colorScheme, isLight ? .light : .dark)
-        .onAppear { installEventMonitors() }
-        .onDisappear { removeEventMonitors() }
+        .onAppear {
+            installEventMonitors()
+            searchText = ""
+            currentPage = 0
+            isSearchActivated = false
+        }
+        .onDisappear {
+            removeEventMonitors()
+            searchText = ""
+            currentPage = 0
+        }
+        .onChange(of: searchText) { _ in
+            // Reset to first page when search changes
+            currentPage = 0
+        }
+        .onChange(of: isSearchFocused) { focused in
+            appEnumerator.isSearching = focused
+        }
+    }
+    
+    // MARK: - Search Bar
+    
+    private var searchBar: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.secondary)
+            
+            TextField("搜索", text: $searchText)
+                .textFieldStyle(.plain)
+                .font(.system(size: 13))
+                .foregroundColor(.primary)
+                .focused($isSearchFocused)
+            
+            if !searchText.isEmpty {
+                Button {
+                    searchText = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 12))
+                        .foregroundColor(.secondary)
+                }
+                .buttonStyle(.plain)
+                .transition(.opacity.combined(with: .scale(scale: 0.8)))
+            }
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 5)
+        .frame(height: 26)
+        .background {
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(isLight ? Color.black.opacity(0.06) : Color.white.opacity(0.1))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .strokeBorder(
+                            isLight ? Color.black.opacity(0.08) : Color.white.opacity(0.15),
+                            lineWidth: 0.5
+                        )
+                )
+        }
+        .frame(width: 200)
+        .padding(.top, 10)
+        .opacity(isSearchActivated || !searchText.isEmpty ? 1.0 : 0.4)
+        .saturation(isSearchActivated || !searchText.isEmpty ? 1.0 : 0.0)
+        .animation(.easeInOut(duration: 0.2), value: isSearchActivated || !searchText.isEmpty)
     }
 
     // MARK: - Single Page View
@@ -173,6 +262,7 @@ struct AppGridView: View {
                         .onTapGesture {
                             appEnumerator.recordClick(appId: app.id)
                             NSWorkspace.shared.open(app.url)
+                            NotificationCenter.default.post(name: NSNotification.Name("HideAppLauncher"), object: nil)
                         }
                     }
                     // Fill empty slots in last row
@@ -201,7 +291,7 @@ struct AppGridView: View {
     // MARK: - Page navigation
     
     private func goToPage(_ direction: PageDirection) {
-        let apps      = appEnumerator.sortedApps
+        let apps      = filteredApps
         let pageCount = max(1, Int(ceil(Double(apps.count) / Double(Grid.perPage))))
         let cp        = min(currentPage, pageCount - 1)
         
@@ -228,11 +318,66 @@ struct AppGridView: View {
         }
         if keyMonitor == nil {
             keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [self] event in
+                // Arrow keys for page navigation
                 if event.keyCode == 123 { // ←
                     self.goToPage(.prev); return nil
                 } else if event.keyCode == 124 { // →
                     self.goToPage(.next); return nil
                 }
+                
+                // K to activate search
+                if event.keyCode == 40 { // K
+                    if !isSearchActivated {
+                        DispatchQueue.main.async {
+                            isSearchActivated = true
+                            isSearchFocused = true
+                        }
+                        return nil
+                    }
+                }
+                
+                // Escape to clear search or hide panel
+                if event.keyCode == 53 { // Escape
+                    if !searchText.isEmpty {
+                        DispatchQueue.main.async { searchText = "" }
+                        return nil
+                    } else if isSearchActivated {
+                        DispatchQueue.main.async { isSearchActivated = false }
+                        return nil
+                    } else {
+                        DispatchQueue.main.async {
+                            NotificationCenter.default.post(name: NSNotification.Name("HideAppLauncher"), object: nil)
+                        }
+                        return nil
+                    }
+                }
+                
+                // Delete/Backspace
+                if event.keyCode == 51 { // Delete
+                    if !searchText.isEmpty {
+                        DispatchQueue.main.async {
+                            searchText = String(searchText.dropLast())
+                        }
+                        return nil
+                    }
+                    return event
+                }
+                
+                // Any printable character → append to search (Launchpad behavior)
+                if let chars = event.characters, !chars.isEmpty,
+                   !event.modifierFlags.contains(.command),
+                   !event.modifierFlags.contains(.control) {
+                    let printable = chars.filter { !$0.isNewline && $0 != "\t" }
+                    if !printable.isEmpty {
+                        DispatchQueue.main.async {
+                            searchText += printable
+                            isSearchActivated = true
+                            isSearchFocused = true
+                        }
+                        return nil
+                    }
+                }
+                
                 return event
             }
         }
@@ -318,6 +463,22 @@ struct AppGridView: View {
             Spacer()
             Image(systemName: "magnifyingglass").font(.system(size: 28)).foregroundColor(.secondary.opacity(0.5))
             Text("No apps found").font(.system(size: 12)).foregroundColor(.secondary)
+            Spacer()
+        }
+    }
+    
+    private var noResultsState: some View {
+        VStack(spacing: 10) {
+            Spacer()
+            Image(systemName: "app.dashed")
+                .font(.system(size: 36, weight: .thin))
+                .foregroundColor(.secondary.opacity(0.5))
+            Text("无搜索结果")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.secondary)
+            Text("尝试搜索其他关键词")
+                .font(.system(size: 11))
+                .foregroundColor(.secondary.opacity(0.6))
             Spacer()
         }
     }

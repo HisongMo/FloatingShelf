@@ -106,9 +106,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let view = AppGridView()
             .environmentObject(appEnumerator)
         
-        // Golden ratio panel: 628 × 372
+        // Panel size: 7 cols × 3 rows + search bar + dots
+        // panelW = 7*72 + 6*14 + 20*2 = 504 + 84 + 40 = 628
+        // panelH = 40(search) + (3*98 + 2*12 + 16*2)(grid=350) + 22(dots) = 412
         let panelW: CGFloat = 628
-        let panelH: CGFloat = 372
+        let panelH: CGFloat = 412
         
         appLauncherPanel = FloatingPanel(contentRect: NSRect(x: 0, y: 0, width: panelW, height: panelH))
         appLauncherPanel.contentView = NSHostingView(rootView: view)
@@ -121,6 +123,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func setupHotkeyCallbacks() {
         NotificationCenter.default.addObserver(forName: NSNotification.Name("HideFileShelf"), object: nil, queue: .main) { [weak self] _ in
             self?.fileShelfPanel.hide()
+        }
+        
+        NotificationCenter.default.addObserver(forName: NSNotification.Name("HideAppLauncher"), object: nil, queue: .main) { [weak self] _ in
+            self?.appEnumerator.isSearching = false
+            self?.appLauncherPanel.hide()
         }
         
         hotkeyManager.onFileShelfKeyDown = { [weak self] in
@@ -148,6 +155,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         
         hotkeyManager.onAppLauncherKeyUp = { [weak self] in
+            // If the user is searching, don't hide the panel
+            if self?.appEnumerator.isSearching == true { return }
+            
             if let hoveredId = self?.appEnumerator.hoveredAppId,
                let app = self?.appEnumerator.apps.first(where: { $0.id == hoveredId }) {
                 self?.appEnumerator.hoveredAppId = nil

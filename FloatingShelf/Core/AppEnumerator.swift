@@ -8,6 +8,7 @@ class AppEnumerator: ObservableObject {
     @Published var apps: [InstalledApp] = []
     @Published var isLoading = false
     @Published var hoveredAppId: String?
+    @Published var isSearching = false
     
     /// Simply returns apps in alphabetical order — no recency sorting
     var sortedApps: [InstalledApp] { apps }
