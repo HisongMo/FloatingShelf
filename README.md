@@ -15,6 +15,12 @@
 
 ---
 
+## 🎬 演示视频
+
+https://github.com/user-attachments/assets/b7e89cfa-7266-4fb1-97e5-cf4c3bf78d60
+
+---
+
 ## 🎯 解决了哪些痛点？
 
 | 痛点场景 | FloatingShelf 的解法 |
